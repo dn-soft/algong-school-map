@@ -54,7 +54,6 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .view-btn.active { background: #4F46E5; color: white; }
 .view-btn:hover:not(.active) { background: #f1f5f9; }
 #map { width: 100%; height: calc(100vh - 130px); }
-#map.tile-mode-white .leaflet-tile-container { filter: grayscale(1) brightness(1.18) contrast(0.85); }
 .school-popup { font-size: 13px; line-height: 1.6; min-width: 220px; }
 .school-popup h3 {
   font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 6px;
@@ -142,18 +141,22 @@ var ALL_SCHOOLS = __ALL_SCHOOLS_JSON__;
 
 var map = L.map('map').setView([36.0, 127.8], 7);
 
-var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-  attribution: '&copy; OpenStreetMap', maxZoom: 18
-});
-osmLayer.addTo(map);
-var mapEl = document.getElementById('map');
-mapEl.classList.add('tile-mode-white');
+var STADIA_KEY = '24c6816e-9469-476f-b2eb-c6569c228601';
+var tileLayers = {
+  white: L.tileLayer('https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png?api_key=' + STADIA_KEY + '&language=ko', {
+    attribution: '&copy; Stadia Maps &copy; OpenMapTiles &copy; OpenStreetMap', maxZoom: 20
+  }),
+  green: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap', maxZoom: 18
+  })
+};
 var currentTile = 'white';
+tileLayers.white.addTo(map);
 
 function setTile(type) {
   if (type === currentTile) return;
-  mapEl.classList.remove('tile-mode-' + currentTile);
-  mapEl.classList.add('tile-mode-' + type);
+  map.removeLayer(tileLayers[currentTile]);
+  tileLayers[type].addTo(map);
   currentTile = type;
   document.getElementById('btn-tile-white').classList.toggle('active', type === 'white');
   document.getElementById('btn-tile-green').classList.toggle('active', type === 'green');
